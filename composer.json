@@ -1,0 +1,19 @@
+{
+  "name": "vendor_name/php-blog",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "mimilun",
+      "email": "mimilun@mail.ru"
+    }
+  ],
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "mimilun\\" : ""
+    }
+  }
+}

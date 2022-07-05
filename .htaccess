@@ -1,0 +1,7 @@
+RewriteEngine on
+
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteCond %{SCRIPT_FILENAME} !-f
+AddDefaultCharset UTF-8
+
+RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
