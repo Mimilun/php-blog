@@ -6,6 +6,7 @@ use mimilun\contracts\Model;
 use mimilun\exceptions\InvalidArgumentException;
 use mimilun\exceptions\InvalidAuthException;
 use mimilun\models\ActiveRecordEntity;
+use mimilun\services\Db;
 
 class User extends ActiveRecordEntity implements Model
 {
@@ -71,6 +72,9 @@ class User extends ActiveRecordEntity implements Model
 
         $user->save();
 
+        $db = Db::getInstance();
+        $user->id = $db->getLastId();
+
         return $user;
     }
 
@@ -90,10 +94,25 @@ class User extends ActiveRecordEntity implements Model
             throw new InvalidAuthException('Не верный логин или пароль');
         }
 
+        if (!$user->getConfirmed()) {
+            throw new InvalidAuthException('Не подтверждена активация');
+        }
+
         $user->authToken = $user->refreshAuthToken();
         $user->save();
 
         return $user;
+    }
+
+    public function setConfirmed(): void
+    {
+        $this->isConfirmed = 1;
+        $this->save();
+    }
+
+    public function getConfirmed(): bool
+    {
+        return $this->isConfirmed;
     }
 
     public function getNickName(): string
@@ -119,5 +138,10 @@ class User extends ActiveRecordEntity implements Model
     protected function refreshAuthToken(): string
     {
         return sha1(random_bytes(100)) . sha1(random_bytes(100));
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
     }
 }

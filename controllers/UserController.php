@@ -4,7 +4,9 @@ namespace mimilun\controllers;
 
 use mimilun\exceptions\InvalidArgumentException;
 use mimilun\exceptions\InvalidAuthException;
+use mimilun\models\Users\EmailSender;
 use mimilun\models\Users\User;
+use mimilun\models\Users\UserActivationService;
 use mimilun\models\Users\UserAuthService;
 
 class UserController extends BaseController
@@ -13,13 +15,18 @@ class UserController extends BaseController
     {
         if (!empty($_POST)) {
             try {
-                User::singUp($_POST);
+                $user = User::singUp($_POST);
             } catch (InvalidArgumentException $e) {
                 $error = $e->getMessage();
                 $this->view->renderHtml('users/register.php', ['error' => $error]);
 
                 return;
             }
+
+            $code = UserActivationService::createActivationCode($user);
+            EmailSender::sendEmail($user, 'Activation Code', 'userActivation.php',
+                ['userId' => $user->getId(), 'code' => $code]);
+
             $message = 'Вы успешно зарегистрированы';
             $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
 
@@ -44,11 +51,6 @@ class UserController extends BaseController
                 $this->view->renderHtml('users/login.php', ['error' => $error]);
 
                 return;
-            } catch (InvalidAuthException $e) {
-                $error = $e->getMessage();
-                $this->view->renderHtml('users/login.php', ['error' => $error]);
-
-                return;
             }
         }
 
@@ -61,5 +63,18 @@ class UserController extends BaseController
         $path = '/';
         header('Location: ' . $path);
         exit;
+    }
+
+    public function activate(int $id, string $code): void
+    {
+        if ($user = User::getById($id)) {
+            if (UserActivationService::checkActivationCode($user, $code)) {
+                $user->setConfirmed();
+                $this->login();
+            }
+        }
+
+        $message = 'Ошибка активации';
+        $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
     }
 }

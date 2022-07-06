@@ -19,6 +19,11 @@ class Db implements DataBase
         $this->pdo->exec('SET NAMES UTF8');
     }
 
+    public function getLastId(): int
+    {
+        return $this->pdo->lastInsertId();
+    }
+
     public static function getInstance(): self
     {
         if (!self::$instance) {

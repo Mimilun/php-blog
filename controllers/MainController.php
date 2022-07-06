@@ -13,4 +13,9 @@ class MainController extends BaseController
     {
         $this->view->renderHtml('about/about.php');
     }
+
+    public function contacts(): void
+    {
+        $this->view->renderHtml('contacts/contacts.php');
+    }
 }
