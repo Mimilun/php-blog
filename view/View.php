@@ -2,17 +2,8 @@
 
 namespace mimilun\view;
 
-use mimilun\models\Users\User;
-use mimilun\models\Users\UserAuthService;
-
 class View
 {
-//    protected ?User $user = null;
-//
-//    public function __construct()
-//    {
-//        $this->user = UserAuthService::getUserByToken();
-//    }
     protected array $arrVar = [];
 
     public function setValue($name, $value): void

@@ -5,10 +5,10 @@
       <div class="col">
         <div class="card">
           <div class="card-header">
-            <h5 class="card-title ps-3"><?= $article->getName() ?></h5>
+            <h5 class="card-title ps-3"><?= $article->name ?></h5>
           </div>
           <div class="card-body text-start">
-              <?= $article->getText() ?>
+              <?= $article->text ?>
           </div>
           <div class="card-footer text-start">
               <?= 'Автор: ' . $article->getAuthor()

@@ -3,9 +3,9 @@
 
 <?php foreach ($articles as $article): ?>
   <div>
-    <h2 class="ps-3"><a href="/articles/<?= $article->getId() ?>"><?= $article->getName() ?></a></h2>
+    <h2 class="ps-3"><a href="/articles/<?= $article->id ?>"><?= $article->name ?></a></h2>
     <p class="ps-2"><?= $article->getDate() ?></p>
-    <p><?= mb_substr($article->getText(), 0, 300) . ' ...........' ?></p>
+    <p><?= mb_substr($article->text, 0, 300) . ' ...........' ?></p>
     <hr>
   </div>
 <?php endforeach; ?>
