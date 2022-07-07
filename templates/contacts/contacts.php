@@ -5,7 +5,7 @@
 <div class="card">
     <div class="card-body">
       <ul class="list-group">
-        <li class="list-group-item"><a href="https://github.com/Mimilun">GitHub:</a></li>
+        <li class="list-group-item"><a href="https://github.com/Mimilun">GitHub</a> ></li>
         <ul class="">
           <li class="list-group-item"><a href="https://github.com/Mimilun/php-blog">php-blog</a></li>
           <li class="list-group-item"><a href="#">...</a></li>

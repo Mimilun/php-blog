@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace mimilun\models\Articles;
 
@@ -53,5 +54,17 @@ class Article extends ActiveRecordEntity implements Model
     public function setAuthor(User $author): void
     {
         $this->authorId = $author->getId();
+    }
+
+    public function getDate(): string
+    {
+        $timestamp = strtotime($this->createdAt);
+        $date = date('d.m.Y', $timestamp);
+        return $date;
+    }
+
+    public function getAuthorId(): int
+    {
+        return $this->authorId;
     }
 }

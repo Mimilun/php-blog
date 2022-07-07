@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mimilun\controllers;
 
+use mimilun\exceptions\UnauthorizedException;
 use mimilun\models\Articles\Article;
 
 class ArticleController extends BaseController
 {
-    public function showOne(int $id): void
+    public function showOne(string $id): void
     {
-        $article = Article::getById($id);
+        $article = Article::getById((int)$id);
 
         if ($article !== null) {
             $this->view->renderHtml('article/article.php', ['article' => $article]);
@@ -27,15 +30,20 @@ class ArticleController extends BaseController
         }
     }
 
-    public function edit(int $id): void
+    public function edit(string $id): void
     {
-        $this->allowAdmin();
+        $article = Article::getById((int)$id);
 
-        $article = Article::getById($id);
+        try {
+            $this->checkAuthor($article);
+        } catch (UnauthorizedException $e) {
+            $message = $e->getMessage();
+            $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-danger']);
+            exit();
+        }
 
         if (empty($_POST)) {
             $this->view->renderHtml('article/edit.php', ['article' => $article]);
-
             exit();
         }
 
@@ -48,65 +56,81 @@ class ArticleController extends BaseController
         try {
             $article->save();
             $message = 'Статья отредактирована';
-            $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
-
         } catch (\Exception $e) {
             $message = 'Не удалось отредактировать статью';
-            $this->view->renderHtml('message.php', ['message' => $message, 'color' => 'bg-danger']);
         }
+        $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
     }
 
     public function add(): void
     {
-        $this->allowAdmin();
-
-        $article = new Article();
-
-        if (!empty($_POST)) {
-            $article->setName($_POST['nameStory']);
-            $article->setText($_POST['contentStory']);
-            $article->setAuthor($this->user);
-
-            try {
-                $article->save();
-                $message = 'Статья добавлена';
-                $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
-
-            } catch (\Exception $e) {
-                $message = 'Не удалось добавить статью';
-                $this->view->renderHtml('message.php', ['message' => $message, 'color' => 'bg-danger']);
-            }
-
-        } else {
-            $this->view->renderHtml('article/add.php');
+        try {
+            $this->checkAuthorisation();
+        } catch (UnauthorizedException $e) {
+            $message = $e->getMessage();
+            $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-danger']);
+            exit();
         }
 
-    }
-
-    public function delete(int $id): void
-    {
-        $this->allowAdmin();
-
         $article = new Article();
 
-        try {
-            $article->delete($id);
-            $message = 'Статья успешно удалена';
-            $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
+        if (empty($_POST)) {
+            $this->view->renderHtml('article/add.php');
+            exit();
+        }
+        $article->setName($_POST['nameStory']);
+        $article->setText($_POST['contentStory']);
+        $article->setAuthor($this->user);
 
+        try {
+            $article->save();
+        } catch (\Exception $e) {
+            $message = 'Не удалось добавить статью';
+            $this->view->renderHtml('message.php', ['message' => $message, 'color' => 'bg-danger']);
+            exit();
+        }
+
+        $message = 'Статья добавлена';
+        $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
+    }
+
+    public function delete(string $id): void
+    {
+        $article = Article::getById((int)$id);
+
+        try {
+            $this->checkAuthor($article);
+        } catch (UnauthorizedException $e) {
+            $message = $e->getMessage();
+            $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-danger']);
+            exit();
+        }
+
+        try {
+            $article->delete((int)$id);
         } catch (\Exception $e) {
             $message = 'Не удалось удалить статью';
             $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-danger']);
         }
+        $message = 'Статья успешно удалена';
+        $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-success']);
     }
 
-    protected function allowAdmin(): void
+    protected function checkAuthorisation(): void
     {
-        if (!$this->user || $this->user->getRole() !== 'admin') {
-            $message = 'Нужны права Админа';
-            $this->view->renderHtml('message.php', ['message' => $message, 'colorBg' => 'bg-danger']);
+        if ($this->user === null) {
+            throw new UnauthorizedException('Необходима авторизация');
+        }
+    }
 
+    protected function checkAuthor(?Article $article): void
+    {
+        if ($article === null) {
+            $this->view->renderHtml('404.php', [], 404);
             exit();
+        }
+        if ($this->user->getId() !== $article->getAuthorId()) {
+            throw new UnauthorizedException('Вы не являетесь автором статьи');
         }
     }
 }

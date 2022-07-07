@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace mimilun\models\Users;
 
@@ -28,7 +29,7 @@ class UserAuthService
         }
         [$id, $token] = explode(':', $_COOKIE['auth_token']);
 
-        $user = User::getById($id);
+        $user = User::getById((int)$id);
 
         if ($user->getAuthToken() !== $token) {
             return null;

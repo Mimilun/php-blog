@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace mimilun\models\Users;
 
 use mimilun\contracts\Model;
 use mimilun\exceptions\InvalidArgumentException;
-use mimilun\exceptions\InvalidAuthException;
 use mimilun\models\ActiveRecordEntity;
 use mimilun\services\Db;
 
@@ -13,7 +13,7 @@ class User extends ActiveRecordEntity implements Model
     protected int $id;
     protected string $nickName;
     protected string $email;
-    protected string $isConfirmed;
+    protected int $isConfirmed;
     protected string $role;
     protected string $passwordHash;
     protected string $authToken;
@@ -91,11 +91,11 @@ class User extends ActiveRecordEntity implements Model
         $user = static::getOneByColumn('nick_name', $userData['login']);
 
         if ($user === null || !password_verify($userData['pass'], $user->passwordHash)) {
-            throw new InvalidAuthException('Не верный логин или пароль');
+            throw new InvalidArgumentException('Не верный логин или пароль');
         }
 
         if (!$user->getConfirmed()) {
-            throw new InvalidAuthException('Не подтверждена активация');
+            throw new InvalidArgumentException('Не подтверждена активация');
         }
 
         $user->authToken = $user->refreshAuthToken();
@@ -110,7 +110,7 @@ class User extends ActiveRecordEntity implements Model
         $this->save();
     }
 
-    public function getConfirmed(): bool
+    public function getConfirmed(): int
     {
         return $this->isConfirmed;
     }
